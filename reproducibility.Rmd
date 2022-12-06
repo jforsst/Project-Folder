@@ -243,6 +243,7 @@ If you set `fork` equal to `TRUE`, however, this will fork the repository and cl
 
 ```{r eval = FALSE}
 usethis::create_from_github("repo_URL-here",
+usethis::create_from_github("https://github.com/jforsst/Project-Folder",
                             fork = TRUE
                             )
 usethis::git_remotes()
