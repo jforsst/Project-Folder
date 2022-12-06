@@ -603,22 +603,25 @@ body {
 
 <h1 id="carbon-emissions-of-top-emitting-countries">Carbon Emissions of
 Top Emitting Countries</h1>
-<p>Jessica Forsstrom and Mariana Ahlquist 2022-12-05</p>
+<p>Jessica Forsstrom and Marianna Ahlquist 2022-12-06</p>
 <!-- Short Description  -->
 
 <p>This project is looking at the trends and total amounts of carbon
 emissions from countries around the world. Source data can be found in
-the bp Statistical World Energy Review of 2021.</p>
-<p><em>Updated on 2022-12-05 21:00:11</em></p>
+the bp Statistical World Energy Review of 2021. hello this is a test</p>
+<p><em>Updated on 2022-12-06 00:21:53</em></p>
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 <h2 id="table-of-contents">Table of contents</h2>
 <ul>
 <li><a href="#general-info">General info</a>
 <ul>
-<li><a href="#Analyses">Analyses</a>
+<li><a href="#methods">Methods</a></li>
+<li><a href="#analysis">Analysis</a></li>
+<li><a href="#project-description">Project Description</a>
 <ul>
-<li><a href="#to-do-list">To do list</a>
+<li><a href="#instructions-for-use">Instructions for use</a></li>
+<li><a href="#directory">Directory</a>
 <ul>
 <li><a href="#contact">Contact</a></li>
 </ul></li>
@@ -628,6 +631,13 @@ the bp Statistical World Energy Review of 2021.</p>
 <h2 id="general-info">General info</h2>
 <p>This project aims to show the magnitude of carbon emissions
 comparatively between countries both over time and overall.</p>
+<h2 id="methods">Methods</h2>
+<ul>
+<li>Cleaning and trimming in Excel, coverting to .csv file</li>
+<li>tidyverse in R Studio used to create tidy data, pivot_longer to
+mutate the data</li>
+<li>ggplot to plot the graphs and bar charts</li>
+</ul>
 <h2 id="analysis">Analysis</h2>
 <ul>
 <li>Finding which countries emit the most each carbon emissions each
@@ -635,23 +645,32 @@ year, then looking at total emissions from 1965 to 2021 and finding the
 top 5 countries that emit the most carbon emissions. Lastly, looking at
 the trends of these top five countries over the time period.</li>
 </ul>
-<h2 id="in-progress">In progress</h2>
+<h2 id="project-description">Project Description</h2>
 <ul>
-<li>Analyzing the trend between carbon emissions and primary energy
-consumption by country or region.</li>
+<li>Exploring the trend of carbon emissions over time in the top carbon
+emitting countries</li>
+<li>Modeling includes bar graphs with frequency, bar graph with emission
+values, and a line graph over time with ggplot</li>
+<li>Challenges include accounting for the USSR and Russian Federation
+because their data is not complete for the studied time period</li>
+<li>Potential next stpes include comparing this data to carbon emissions
+per capita, looking at the relationship carbon emissions have with
+economic growth, or developing strategies to mitigate carbon emissions
+particularly in large emitting countries</li>
 </ul>
-<h2 id="to-do-list">To-do list</h2>
+<h2 id="instructions-for-use">Instructions for use</h2>
 <ul>
-<li>Look at carbon emissions per capita and how that compares to total
-carbon emissions. Look at the relationship carbon emissions has with
-economic growth/output. Develop strategies to help mitigate the large
-amount of carbon being emitted by these large emitting countries.</li>
+<li>Download csv files from the data folder, then download the
+Rmarkdown!</li>
 </ul>
-<h2 id="status">Status</h2>
-<p>Project is: <em>in progress</em></p>
+<h2 id="directory">Directory</h2>
+<p>Project-Folder/ ├─ .Rhistory ├─ analysis/ │ ├─ EDA-BP-Analysis.Rmd ├─
+data/ │ ├─ co2_2.csv │ ├─ energydata2.csv ├─ renv/ ├─ .gitignore ├─
+.Rprofile ├─ README.md ├─ README.Rmd ├─ README.html ├─ R.RProj ├─
+renv.lock ├─ reproducibility.Rmd</p>
 <h2 id="contact">Contact</h2>
-<p>Created by <a href="website_URL">Jessica Forsstrom, Marianna
-Ahlquist</a></p>
+<p>Created by <a href="website_URL">Marianna Ahlquist, Jessica
+Forsstrom</a></p>
 
 </body>
 </html>
