@@ -1,0 +1,320 @@
+---
+title: "Reproudicibility and Collaboration with R"
+author:
+- name: Gregory Palermo
+  affiliation: Emory University
+date: "19 October 2022"
+output:
+  html_notebook:
+    toc: yes
+    toc_float: yes
+subtitle: |
+  Fall 2022
+  ENGRD/QTM 302W: Technical Writing for Data Science
+editor_options: 
+  chunk_output_type: console
+---
+
+You've read a [blog post](https://rstudio-pubs-static.s3.amazonaws.com/599947_7c545f28e24e4d21ab5dcbbb59210c63.html) by Glenn Moncrieff on Reproducibility in R. To collaborate share your work with others and encourage that it will run the same on their machine as your own, there are a number of solutions ranging from environment management to hosting an executable computing environment on a repository.
+
+This notebook is intended to help you explore some of these methods to put reproducibility into practice. We will review installing and using `renv`, creating and interacting with a GitHub repository from within RStudio, and using the `holepunch` library to prepare this repository to be "binderized" so that visitors can execute the code therein. Finally, we will review some basic workings of git and GitHub to enable you to collaborate with others and work with others' code.
+
+# R environment management with `renv`
+
+To ensure that everyone working from a project repository (and you, if you have multiple machines) is using the same packages and versions, we can use `renv` to manage our computing environment. This is particularly useful if you are collaborating with others on a team and committing to a common repository.
+
+First, we install the library. The `type = "binary` argument elects to install a pre-compiled version rather than compiling the source on your machine, which is a much faster process. 
+
+```{r eval=FALSE}
+install.packages("renv", type = "binary")
+```
+
+Then, we can initiate an R virtual environment. This may take a while, depending on the project, since it retrieves and installs all the packages you are using.
+
+```{r eval=FALSE}
+renv::init()
+```
+
+To update a "lockfile" of your R environment that lists required packages and versions as your code changes, you can run `renv::snapshot()`.
+
+A collaborator can then run `renv::restore()`, which will refer to the lockfile to install dependent packages in their specific versions. Alternatively, they may wish to use `renv::hydrate()` first, which checks to see if the packages specified in the lockfile are installed in the user environment and attempts to copy them to the project library; if not, it will continue with the installation.
+
+A couple of caveats to note with `renv`:
+
+*	It will not capture system dependencies (anything that must be installed on your machine outside of R for the code to run).
+* Re-installing packages can take a while, even using `hydrate`.
+* This requires a local install of R to run your code, which is isolated, and not everyone can do.
+
+This last point is a significant barrier to full reproducibility. While `renv` is useful for collaborations if included in a shared repository, it doesn't make your work as accessible as it could be for engagement and review by peers and potential collaborators/employers.
+
+In the coming sections, we'll set you up to instead create and host a free virtual machine from your code so that others can run your analysis interactively.
+
+# Preparing your data analysis project to be Binderized
+
+To create a virtual version of your analysis, you will be hosting your code on a public GitHub repository and binderizing it using "mybinder.org." This [free site](http://mybinder.org) has some limitations—namely, it has limited computing power and it is publicly accessible. So, projects that require a relatively high amount of memory or store secure data require another solution. There are more extensive ways to build more robust projects, like using the library `rrtools` described [here](https://annakrystalli.me/rrresearchACCE20/creating-a-research-compendium-with-rrtools.html)to write a full-length publication using [bookdown](https://bookdown.org), and even to host your own ["BinderHub"](https://the-turing-way.netlify.app/reproducible-research/binderhub/binderhub-introduction.html), but this will be all you need for this class.
+
+## Research compendia: organizing your files
+
+Recall our recent class conversations on the rhetoricity of code, which included some recommendations for how code might be organized and styled within a script or code notebook. We reviewed conventions for making names of variables and functions more descriptive, effectively commenting code, and reorganizing code when "refactoring" to consolidate tasks that we notice ourselves using over and over in iterative, exploratory data analysis. Further, we talked about how `rmarkdown` enables embedding executable code alongside contextualizing text in a "literate programming" paradigm.
+
+Making these conventional choices when authoring code balances the ability of machines and humans to read your code. These efforts begin to enable the reproducibility of your research, since your code is more easily navigable and intelligible. 
+
+Taking this deliberate structuring for others a level up, folks using R and other scripting languages for reproducible research have moved to develop conventions for organizing files and directories. Because the needs of data analysis projects differ from the needs of other development, these research "compendia" differ slightly in form from other organizations of source files.
+
+You have already read Marwick et al.'s [article](https://doi.org/10.1080/00031305.2017.1375986) on compendia, which situates the development within its scholarly context, but can get a bit in the weeds. For an overview of compendia that you can return to as a reference you might review [this post](https://github.com/ropensci/rrrpkg) by RStudio software engineer Jenny Bryan. Compendia vary depending on the expansiveness of the project, but the most simple recommended structure looks like this:
+
+
+project
+|- DESCRIPTION          # project metadata and dependencies 
+|- README.md            # top-level description of content and guide to users
+|
+|- data/                # raw data, not changed once created
+|  +- my_data.csv       # data files in open formats such as TXT, CSV, TSV, etc.
+|
+|- analysis/            # any programmatic code 
+|  +- my_report.Rmd     # R Markdown file with R code and text interwoven
+
+
+Generally speaking, the end goal toward transparency and reproducibility is to separate the input data from the processing and the output. The compendia will also contain a README file describing the contents and any documentation, licensing, and files specifying dependencies. (As an aside, here's a [tool you can use](https://tree.nathanfriend.io) to generate ASCII trees to include in your READMEs.
+
+### Setting up your compendium's directory structure
+
+While you can build a research compendium from scratch according to the above map, one option for creating a researrch directory structure is to use the library `sketchy`.
+
+`remotes` is used to install the library because it's hosted on GitHub, rather than on, say, CRAN. (The "binary" argument means that we won't have to wait for the code to compile if it's available in a ready-compiled form.)
+
+
+```{r eval=FALSE}
+install.packages("remotes", type = "binary")
+remotes::install_github("maRce10/sketchy")
+```
+
+I like this library over others because it has multiple options available for directory structures. I encourage you to [pick one](https://marce10.github.io/sketchy/index.html) that fits your needs. I've specified the paths so that the structure is added to the current project folder rather than making a subfolder with a new name. Explore what structure the function this code puts in place, the project compendium template with the files for your project, from which you will form a local repository. 
+
+```{r eval=FALSE}
+install.packages("tidyverse", type = "binary")
+
+library(tidyverse)
+library(sketchy)
+
+path = getwd() %>% dirname()
+name = getwd() %>% basename()
+
+sketchy::make_compendium(name = name,
+                         path = path,
+                         force=TRUE, #Note: force will *not* overwrite any files or folders, but put contents in a folder of the same name
+                         format = "small_compendium", #one of many options,
+                         readme = TRUE)
+```
+
+If you really want to get into the weeds, you can also customize the structures by modifying the contents of the list of `sketchy::compendiums`. For example, you might want to separate "raw" data from "cleaned" data—to the extent, as we've talked about, that makes sense—and outputs like figures.
+
+You can generate a `README.md` file from `README.Rmd` after modifying it to include information relevant to your project.
+
+```{r eval = FALSE}
+rmarkdown::render(file.path(path,name,"README.Rmd"))
+```
+
+## Setting Up a GitHub repository for your data science project
+
+There are a few ways, for our purposes, to create a GitHub repository:
+
+* If you have facility with git in the command line, you could init, commit, and push your local repository to a repository you create in a web browser or by using GH CLI. The downside is that you have to leave RStudio, and it's extra steps. 
+* You could use the GitHub Desktop client. Do this if you want a GUI solution and don't want to mess with authentication. The downside is, again, that you have to leave RStudio, and it's extra steps. 
+* You could use R's `usethis` library to interact with GitHub from within RStudio, which will pop open a browser when necessary.
+
+I will use the `usethis` approach here. You will use it to establish a git repository  Before you continue, please ensure that you have created a GitHub account, and you might log in on your web browser of choice. 
+
+The developers of RStudio have developed a [handy library](https://usethis.r-lib.org/index.html) called `usethis` that automates functions associated with setting up project structures.
+
+### Authenticating with GitHub using `usethis`
+
+First, we'll use the library to create a Personal Access Token (PAT) on GH, which it uses to authenticate you. You'll need to do this once every set period of time, by default 30 days. The code below guides you through setup, opening a browser window to generate a PAT with the recommended settings already selected for you. It then prompts you to store these credentials in memory. (I encourage you to store your PAT elsewhere too.) 
+
+```{r eval=FALSE}
+usethis::gh_token_help()
+usethis::create_github_token()
+gitcreds::gitcreds_set("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") #stuck here
+
+#PAT Safekeeping: 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
+```
+
+### Creating a local git repository
+We can then use the `usethis::use_git()` function to initialize a new local git repository. 
+
+```{r eval=FALSE}
+usethis::git_default_branch_configure(name = "main")
+usethis::use_git()
+```
+
+This repository is not currently linked to any remote repositories on GH, but will track version changes in our files and allow us to "push" the contents to GH for public access. If you already have a git repository in your working directory, `use_git()` will instead prompt you to commit any recent changes. Note that this local repository is not currently linked with any remote repos, which we will create later.
+
+```{r eval=FALSE}
+usethis::git_remotes()
+```
+
+## Generating necessary configuration files for binder
+When we have our folder structure and git repository in place, we can use the library `holepunch` to generate a couple of configuration files required to binderize the repository: a file that describes dependencies; and a file that tells binder how to assemble the virtual computing environment.
+
+```{r eval=FALSE}
+remotes::install_github("karthik/holepunch", type = "binary")
+```
+
+Now, we can make `install.R` and `runtime.txt` files. The former has a list of libraries to install and the latter a version of R. These will tell binder what needs to be on your virtual computing environment. (Note: making your repository into an R package with a DESCRIPTION file and Dockerfile is generally more efficient; however, I ran into an issue where `holepunch` was generating a blank Dockerfile. I may update this in the future, since this way will take a LONG time to render.) 
+
+```{r eval=FALSE}
+library(holepunch)
+write_install()
+write_runtime()
+```
+
+## Creating a GitHub repository from your local repo
+
+Finally, we can create a repository on your GitHub account from your local one!
+
+```{r eval=FALSE}
+usethis::use_git()
+usethis::use_github()
+usethis::git_remotes()
+```
+
+Besides copying/pasting the remote URL on <mybinder.org>, we can also add a badge to the README. The first time, we will have to paste the code generated in the console into `README.md`. From there on out, the function will replace it.
+
+```{r eval=FALSE}
+generate_badge(branch="main")
+
+rmarkdown::render(file.path(path,name,"README.Rmd"))
+```
+
+If you make changes like this, make sure you commit them first! You can run `use_git()` or do so in the Git tab in RStudio. If you don't know how, it's described later in this notebook. Make sure that you include any hidden directories like `.binder`!
+
+You can now click a button on your repository page to load it in binder!
+
+## Some resources for folks using python instead of R
+
+### Virtual environments
+
+There are environment managers similar to `renv` in python, such as `venv` and `conda`. Those of you using the Anaconda distribution might look through this tutorial on [conda virtual environments](https://the-turing-way.netlify.app/reproducible-research/renv/renv-package.html#making-and-using-environments).
+
+
+### Binderizing in python
+
+The steps for preparing your project for binderization are similar to in R. The steps involve: 
+  * Preparing a compendium, either by hand or with the aid of a software package. 
+  * Initializing a git repository, either in the command line using `git` or with a package like `GitPython`. 
+  * Creating files that tell binder how to build a virtual environment from your repository, in the case of python a `requirements.txt` file. There are solutions, depending on your package manager (e.g., conda or pip) for generating these automatically from the packages installed in your environment. For conda environments, Binder uses the `environment.yml` requirements file described in the above tutorial. 
+  * Creating a GH repository from your local repository. 
+  * Loading the GH repo in Binder, whether through a link in your README or by copy/pasting the repo URL on <mybinder.org>. 
+    
+[This tutorial](https://the-turing-way.netlify.app/communication/binder/zero-to-binder.html) can walk you through some of the specifics.
+
+# Using git and GitHub to collaborate
+Let's come back to collaboration from peer review and communication. Suppose you are working with someone who has committed a repository like this to GH, and you want to have a local copy on your machine so you can work with it—not just run it, but make changes and potentially incorporate those changes. Or, suppose that someone has published a data project and you want to work on it locally for an extended period of time, especially given that there's little opportunity with binder to save or export what you do there. 
+
+The real power of git and GitHub is tracking versions, especially while you're working with someone else. A full introduction to git and GitHub is beyond our scope, but what follows are the bare bones.
+
+## Cloning: making a local copy of a remote repo
+
+Creating a local version of a remote repository is called "cloning," and there's a number of ways to do so. The most convenient, in our context, is to use `usethis`.
+
+```{r eval=FALSE}
+usethis::create_from_github("repo_URL-here")
+```
+
+This will establish a local git repo on your Desktop, which you can move to a place that makes sense—usually in `Documents` or your home folder (on Mac and Linux, `~`). You can also run something like the code below to specify a destination directory.
+
+```{r eval=FALSE}
+options(usethis.destdir = "your/directory/here")
+```
+
+## Pushing and pulling
+
+You can now author and change code, commit your changes, and contribute ("push") your code to the remote repository, which is the green up arrow in the Git pane.
+
+If the repository has changed in the meantime, you will need to "pull" these changes from this remote "origin" first, and reconcile those changes, before you can push. That's the blue down arrow.
+
+## Forking: making your own remote repo from a repo
+
+Another option available from "cloning" is "forking," which creates a copy of the repository on your GH account, before you would then clone that new variant of the repository.
+
+By default, the arg `fork` on the `create_from_github()` function is set to `FALSE`; that will clone the repository and keep the "remote" set to "origin"—i.e. the repository that you cloned.
+
+If you set `fork` equal to `TRUE`, however, this will fork the repository and clone it to your local machine. There will then be two "remotes": the original repository will be in a remote called "upstream," while the remote "origin" will be the forked repository on your GH. You can verify this with `git_remotes()`.
+
+```{r eval = FALSE}
+usethis::create_from_github("repo_URL-here",
+                            fork = TRUE
+                            )
+usethis::git_remotes()
+```
+
+## gitignore: what not to track with git
+
+Most of the time, you probably don't want to track your outputs, whether they are processed data or figures. 
+
+You also might not want to track and share documents with your private notes or large files.
+
+You can add the relative file paths manually (one on each line) to a file called `.gitignore` in your working directory. Open your git repository's gitignore with the code below to see what is ignored by default in R projects.
+
+```{r}
+usethis::edit_git_ignore()
+```
+
+If you want to pass file paths from another part of your code or otherwise automate this process, you can also use `use_this` to do it from a character vector of file paths.
+
+```{r eval = FALSE}
+files <- c("file1","file2")
+use_this::use_git_ignore(files)
+```
+
+# Go forth!
+
+I hope this notebook is useful to put some of the transparency and collaboration ideals we've been talking about into practice. You will be using using these methods to organize and share the code with me from your research poster project.
+
+# A note on citations
+
+Make sure that you cite any of the packages if you use this workflow for a project! Some repositories will have notes on how to cite them in their READMEs, or there may have included a `CITATION.cff` file that will populate a widget on the sidebar on GH with instructions about how to cite the repository. For this notebook, you should cite:
+
+Araya-Salas, M., Willink, B., Arriaga, A. (2022), sketchy: research compendiums for data analysis in R. R package version 1.0.0. https://github.com/maRce10/sketchy
+
+Ram, K (2020). holepunch: Make your R project Binder ready. https://github.com/karthik/holepunch.
+
+Wickham H, Bryan J, Barrett M (2022). usethis: Automate Package and Project Setup. https://usethis.r-lib.org, https://github.com/r-lib/usethis.
+
+
+# Removed code to create DESCRIPTION & Dockerfile
+
+Like Moncrieff recommends, we might use `usethis` to specify some other options with information about our project.
+
+```{r eval=FALSE}
+options(
+  usethis.full_name = "your_name",
+  usethis.description = list(Title = 'A one-line description of your project goes here.', `Authors@R` = 'person("Your", "Name", email = "your_email", role = c("aut", "cre"), comment = c(ORCID = "0000-0000-0000-0000"))',License = "MIT")
+  )
+```
+
+Then, we can create the compendium DESCRIPTION file.
+
+```{r eval=FALSE}
+library(holepunch)
+write_compendium_description(package = "My Data Analysis Project",
+                             description = "This is your data analysis project compendium",
+                             version = "1.0")
+```
+
+Finally, the Dockerfile.
+
+```{r eval=FALSE}
+write_dockerfile(branch="main")
+# To write a dockerfile. It will automatically pick the date of the last modified file, match it to 
+# that version of R and add it here. You can override this by passing r_date to some arbitrary date
+# (but one for which a R version exists).
+```
+
+
+
+
+
+
+
+
